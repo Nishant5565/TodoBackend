@@ -12,19 +12,23 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '20'
+
     - name: Install dependencies
       run: npm install
+      working-directory: Backend
+
     - name: Build project
       run: npm run build
-    - name: Install production dependencies
-      run: npm install --production --prefix ./dist
+      working-directory: Backend
+
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'hospital-backend'
+        app-name: 'hospitalManagement'
         publish-profile: ${{ secrets.AZURE_SECRET_KEY }}
-        package: ./dist
+        package: Backend/dist
