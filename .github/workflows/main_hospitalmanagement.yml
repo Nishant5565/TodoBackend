@@ -20,9 +20,11 @@ jobs:
       run: npm install
     - name: Build project
       run: npm run build
+    - name: Install production dependencies
+      run: npm install --production --prefix ./dist
     - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v2
       with:
-        app-name: 'hospitalManagement '
+        app-name: 'hospital-backend'
         publish-profile: ${{ secrets.AZURE_SECRET_KEY }}
         package: ./dist
