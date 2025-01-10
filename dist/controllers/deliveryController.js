@@ -9,10 +9,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteDelivery = exports.updateDelivery = exports.createDelivery = exports.getDeliveries = void 0;
+exports.deleteDeliveryPersonal = exports.updateDeliveryPersonal = exports.createDeliveryPersonal = exports.getDeliveriePersonal = void 0;
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
-const getDeliveries = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getDeliveriePersonal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const deliveries = yield prisma.deliveryPersonnel.findMany();
         res.json(deliveries);
@@ -21,20 +21,28 @@ const getDeliveries = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-exports.getDeliveries = getDeliveries;
-const createDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.getDeliveriePersonal = getDeliveriePersonal;
+const createDeliveryPersonal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("createDeliveryPersonal");
+    const { name, additionalDetails, contactInfo, pantryId } = req.body;
     try {
         const newDelivery = yield prisma.deliveryPersonnel.create({
-            data: req.body,
+            data: {
+                name,
+                additionalDetails,
+                contactInfo,
+                pantryId: parseInt(pantryId, 10), // Convert pantryId to integer
+            }
         });
         res.json(newDelivery);
     }
     catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
+        console.log(error);
+        res.status(500).json({ error: error });
     }
 });
-exports.createDelivery = createDelivery;
-const updateDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.createDeliveryPersonal = createDeliveryPersonal;
+const updateDeliveryPersonal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         const updatedDelivery = yield prisma.deliveryPersonnel.update({
@@ -47,8 +55,8 @@ const updateDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-exports.updateDelivery = updateDelivery;
-const deleteDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+exports.updateDeliveryPersonal = updateDeliveryPersonal;
+const deleteDeliveryPersonal = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { id } = req.params;
         yield prisma.deliveryPersonnel.delete({
@@ -60,4 +68,4 @@ const deleteDelivery = (req, res) => __awaiter(void 0, void 0, void 0, function*
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-exports.deleteDelivery = deleteDelivery;
+exports.deleteDeliveryPersonal = deleteDeliveryPersonal;

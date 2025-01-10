@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const getDeliveries = async (req: Request, res: Response) => {
+export const getDeliveriePersonal = async (req: Request, res: Response) => {
   try {
     const deliveries = await prisma.deliveryPersonnel.findMany();
     res.json(deliveries);
@@ -11,19 +11,26 @@ export const getDeliveries = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
-
-export const createDelivery = async (req: Request, res: Response) => {
+export const createDeliveryPersonal = async (req: Request, res: Response) => {
+  console.log("createDeliveryPersonal");
+  const { name, additionalDetails, contactInfo, pantryId } = req.body;
   try {
     const newDelivery = await prisma.deliveryPersonnel.create({
-      data: req.body,
+      data: {
+        name,
+        additionalDetails,
+        contactInfo,
+        pantryId: parseInt(pantryId, 10), // Convert pantryId to integer
+      }
     });
     res.json(newDelivery);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.log(error);
+    res.status(500).json({ error: error});
   }
 };
 
-export const updateDelivery = async (req: Request, res: Response) => {
+export const updateDeliveryPersonal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const updatedDelivery = await prisma.deliveryPersonnel.update({
@@ -36,7 +43,7 @@ export const updateDelivery = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteDelivery = async (req: Request, res: Response) => {
+export const deleteDeliveryPersonal = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await prisma.deliveryPersonnel.delete({

@@ -5,7 +5,7 @@ const router = Router();
 
 router.get('/', getPantryTasks);
 router.post('/', createPantryTask);
-router.put('/', updatePantryTask);
+router.put('/:id', updatePantryTask);
 router.delete('/:id', deletePantryTask);
 
 export default router;

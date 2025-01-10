@@ -19,9 +19,12 @@ const app = (0, express_1.default)();
 const prisma = new client_1.PrismaClient();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://hospital-management-rose.vercel.app'],
     credentials: true
 }));
+app.get('/', (req, res) => {
+    res.send('Server is running');
+});
 app.use('/auth', authRoutes_1.default);
 //* Middleware to authenticate JWT token
 app.use(authMiddleware_1.authenticateToken);
@@ -29,7 +32,7 @@ app.use(authMiddleware_1.authenticateToken);
 app.use('/patients', patientRoutes_1.default);
 app.use('/diet-charts', dietChartRoutes_1.default);
 app.use('/pantry', pantryRoutes_1.default);
-app.use('/deliveries', deliveryRoutes_1.default);
+app.use('/delivery', deliveryRoutes_1.default);
 app.use('/pantry-tasks', pantryTasksRoutes_1.default); // Add this line
 app.use((err, req, res, next) => {
     console.error(err.stack);

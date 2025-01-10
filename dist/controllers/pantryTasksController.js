@@ -41,12 +41,22 @@ const createPantryTask = (req, res) => __awaiter(void 0, void 0, void 0, functio
 exports.createPantryTask = createPantryTask;
 const updatePantryTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        console.log("update pantry task");
         const { id } = req.params;
-        const updatedPantryTask = yield prisma.mealPreparation.update({
+        const updatedValues = req.body;
+        console.log(updatedValues);
+        const pantryTask = yield prisma.mealPreparation.update({
             where: { id: Number(id) },
-            data: req.body,
+            data: {
+                dietChartId: updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.dietChartId,
+                pantryId: updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.pantryId,
+                deliveryNotes: updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.deliveryNotes,
+                deliveryStatus: updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.deliveryStatus,
+                preparationStatus: updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.preparationStatus,
+                assignedTo: parseInt(updatedValues === null || updatedValues === void 0 ? void 0 : updatedValues.assignedTo, 10),
+            },
         });
-        res.json(updatedPantryTask);
+        res.json(pantryTask);
     }
     catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });

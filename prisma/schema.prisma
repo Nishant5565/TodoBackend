@@ -4,8 +4,10 @@ datasource db {
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
 }
+
 
 model User {
   id        Int      @id @default(autoincrement()) //* Primary Key
@@ -62,7 +64,7 @@ model Pantry {
 
 model MealPreparation {
   id                Int                @id @default(autoincrement()) //* Primary Key
-  dietChartId       Int
+  dietChartId       Int                @unique
   dietChart         DietChart          @relation(fields: [dietChartId], references: [id])
   pantryId          Int
   pantry            Pantry             @relation(fields: [pantryId], references: [id])

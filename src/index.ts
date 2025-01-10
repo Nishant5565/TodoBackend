@@ -18,10 +18,16 @@ const prisma = new PrismaClient();
 app.use(express.json());
 app.use(cors(
   {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'https://hospital-management-rose.vercel.app'],
     credentials: true
   }
 )); 
+
+
+app.get('/', (req: Request, res: Response) => {
+  res.send('Server is running');
+}
+);
 
 app.use('/auth', authRoutes);
 
@@ -33,7 +39,7 @@ app.use(authenticateToken);
 app.use('/patients', patientRoutes);
 app.use('/diet-charts', dietChartRoutes);
 app.use('/pantry', pantryRoutes);
-app.use('/deliveries', deliveryRoutes);
+app.use('/delivery', deliveryRoutes);
 app.use('/pantry-tasks', pantryTaskRoutes); // Add this line
 
 

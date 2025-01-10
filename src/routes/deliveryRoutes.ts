@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { getDeliveries, createDelivery, updateDelivery, deleteDelivery } from '../controllers/deliveryController';
+import { getDeliveriePersonal, createDeliveryPersonal, updateDeliveryPersonal, deleteDeliveryPersonal } from '../controllers/deliveryController';
 
 const router = Router();
 
-router.get('/', getDeliveries);
-router.post('/', createDelivery);
-router.put('/:id', updateDelivery);
-router.delete('/:id', deleteDelivery);
+router.get('/', getDeliveriePersonal);
+router.post('/', createDeliveryPersonal);
+router.put('/:id', updateDeliveryPersonal);
+router.delete('/:id', deleteDeliveryPersonal);
 
 export default router;

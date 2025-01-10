@@ -30,16 +30,29 @@ export const createPantryTask = async (req: Request, res: Response) => {
 
 export const updatePantryTask = async (req: Request, res: Response) => {
   try {
+    console.log("update pantry task");
+
     const { id } = req.params;
-    const updatedPantryTask = await prisma.mealPreparation.update({
+
+    const updatedValues = req.body;
+
+    console.log(updatedValues);
+
+    const pantryTask = await prisma.mealPreparation.update({
       where: { id: Number(id) },
-      data: req.body,
+      data: {
+        dietChartId: updatedValues?.dietChartId,
+        pantryId: updatedValues?.pantryId,
+        deliveryNotes: updatedValues?.deliveryNotes,
+        deliveryStatus: updatedValues?.deliveryStatus,
+        preparationStatus: updatedValues?.preparationStatus,
+        assignedTo: parseInt(updatedValues?.assignedTo, 10),      },
     });
-    res.json(updatedPantryTask);
+    res.json(pantryTask);
   } catch (error) {
     res.status(500).json({ error: 'Internal Server Error' });
   }
-};
+} ;
 
 export const deletePantryTask = async (req: Request, res: Response) => {
   try {
