@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const dietChartController_1 = require("../controllers/dietChartController");
+const router = (0, express_1.Router)();
+router.get('/', dietChartController_1.getAllDietCharts);
+router.get('/:id', dietChartController_1.getDietCharts);
+router.post('/:id', dietChartController_1.createDietChart);
+router.put('/:id', dietChartController_1.updateDietChart);
+router.delete('/:id', dietChartController_1.deleteDietChart);
+exports.default = router;

@@ -1,0 +1,100 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement()) //* Primary Key
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("USER") //* "USER", "Manager", "Delivery", "Pantry"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Patient {
+  id               Int         @id @default(autoincrement()) //* Primary Key
+  name             String
+  diseases         String[]
+  allergies        String[]
+  roomNumber       String
+  bedNumber        String
+  floorNumber      Int
+  age              Int
+  gender           String
+  contactInfo      String
+  emergencyContact String
+  additionalInfo   Json? //* For other optional patient details, right now not adding anything
+  dietCharts       DietChart[]
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model DietChart {
+  id                  Int               @id @default(autoincrement()) //* Primary Key
+  patientId           Int
+  patient             Patient           @relation(fields: [patientId], references: [id])
+  name                String
+  mealType            String            //* "Morning", "Afternoon", "Night"
+  ingredients         String[]
+  instructions        String
+  mealPreparations    MealPreparation[]
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model Pantry {
+  id                Int                 @id @default(autoincrement()) //* Primary Key
+  staffName         String
+  contactInfo       String
+  location          String
+  mealPreparations  MealPreparation[]
+  deliveryPersonnel DeliveryPersonnel[]
+  pantryTasks       PantryTask[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model MealPreparation {
+  id                Int                @id @default(autoincrement()) //* Primary Key
+  dietChartId       Int
+  dietChart         DietChart          @relation(fields: [dietChartId], references: [id])
+  pantryId          Int
+  pantry            Pantry             @relation(fields: [pantryId], references: [id])
+  preparationStatus String             @default("Pending") //* "Pending", "In Progress", "Completed"
+  deliveryStatus    String             @default("Not Delivered") //* "Not Delivered","Dispatched" , "Delivered"
+  assignedTo        Int?
+  deliveryPersonnel DeliveryPersonnel? @relation(fields: [assignedTo], references: [id])
+  deliveryNotes     String?            
+  deliveredAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model DeliveryPersonnel {
+  id                Int               @id @default(autoincrement()) //* Primary Key
+  name              String
+  contactInfo       String
+  additionalDetails Json?
+  pantryId          Int
+  pantry            Pantry            @relation(fields: [pantryId], references: [id])
+  mealDeliveries    MealPreparation[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model PantryTask {
+  id          Int      @id @default(autoincrement()) //* Primary Key
+  taskName    String
+  description String?
+  status      String   @default("Pending") //* "Pending", "In Progress", "Completed"
+  pantryId    Int
+  pantry      Pantry   @relation(fields: [pantryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
