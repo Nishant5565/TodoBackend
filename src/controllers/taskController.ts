@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
  * Create a new task
  */
 export const createTask = async (req: Request, res: Response) => {
-  const { title, priority, userId } = req.body;
+  const { title, priority, userId , dueDate} = req.body;
  
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
@@ -17,6 +17,7 @@ export const createTask = async (req: Request, res: Response) => {
       data: {
         title,
         priority,
+        dueDate,
         userId,
       },
     });
@@ -53,14 +54,14 @@ export const getTasks = async (req: Request, res: Response) => {
  */
 export const updateTask = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { title, priority , userId} = req.body;
+  const { title, priority , userId , dueDate} = req.body;
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const task = await prisma.task.updateMany({
       where: { id, userId },
-      data: { title, priority },
+      data: { title, priority , dueDate},
     });
 
     if (task.count === 0)

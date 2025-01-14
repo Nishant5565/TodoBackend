@@ -24,6 +24,7 @@ model Task {
   description String?                       // Optional task description
   priority    String   @default("low")      // Task priority (low, medium, high)
   completed   Boolean  @default(false)      // Task completion status
+  dueDate     DateTime?                     // Optional due date for the task
   user        User     @relation(fields: [userId], references: [id]) // User association
   userId      String                        // Foreign key to User
   createdAt   DateTime @default(now())      // Timestamp when the task is created

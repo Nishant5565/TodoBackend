@@ -12,7 +12,6 @@ const prisma = new PrismaClient();
 
 // * Register function to create a new user in the database.
 export const register = async (req: Request, res: Response) => {
-  console.log("Hello");
   const schema = Joi.object({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
