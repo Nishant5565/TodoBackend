@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
 import { PrismaClient } from "@prisma/client";
+import Joi from "joi";
 
 interface CustomRequest extends Request {
   user?: any;
@@ -11,24 +12,57 @@ const prisma = new PrismaClient();
 
 // * Register function to create a new user in the database.
 export const register = async (req: Request, res: Response) => {
-  const { email, password , name , role } = req.body;
-  console.log (email, password, name, role);
+  console.log("Hello");
+  const schema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).required(),
+    name: Joi.string().min(3).required(),
+    tasks: Joi.array().items(
+      Joi.object({
+        title: Joi.string().required(),
+        priority: Joi.string().valid("HIGH", "MEDIUM", "LOW").required(),
+      })
+    ).optional(),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const { email, password, name, tasks = [] } = req.body;
+
   try {
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: await bcrypt.hash(password, 10),
-        name,
-        role
-      },
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const user = await prisma.$transaction(async (prisma) => {
+      const newUser = await prisma.user.create({
+        data: { email, name, password: hashedPassword },
+      });
+
+      if (tasks.length) {
+        await prisma.task.createMany({
+          data: tasks.map((task : object) => ({
+            ...task,
+            userId: newUser.id,
+          })),
+        });
+      }
+
+      return newUser;
     });
 
-    res.json(user);
+    // Exclude the password from the response
+    const { password: _, ...userWithoutPassword } = user;
+    res.status(201).json(userWithoutPassword);
   } catch (error) {
     console.error("Error during registration:", error);
+
+    if (error === "P2002") {
+      return res.status(409).json({ error: "Email is already registered" });
+    }
+
     res.status(500).json({ error: "Internal server error" });
   }
-}
+};
 
 // * Login function to generate token for the user.
 export const login = async (req: Request, res: Response) => {

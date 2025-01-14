@@ -1,11 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { PrismaClient } from '@prisma/client';
-import patientRoutes from './routes/patientRoutes';
-import dietChartRoutes from './routes/dietChartRoutes';
-import pantryRoutes from './routes/pantryRoutes';
-import deliveryRoutes from './routes/deliveryRoutes';
 import authRoutes from './routes/authRoutes';
-import pantryTaskRoutes from './routes/pantryTasksRoutes'; 
 import { authenticateToken } from './middleware/authMiddleware';
 import cors from 'cors';
 import env from 'dotenv';
@@ -36,11 +31,7 @@ app.use('/auth', authRoutes);
 app.use(authenticateToken);
 
 //* Routes
-app.use('/patients', patientRoutes);
-app.use('/diet-charts', dietChartRoutes);
-app.use('/pantry', pantryRoutes);
-app.use('/delivery', deliveryRoutes);
-app.use('/pantry-tasks', pantryTaskRoutes); // Add this line
+
 
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
