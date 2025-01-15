@@ -12,20 +12,7 @@ const prisma = new PrismaClient();
 
 // * Register function to create a new user in the database.
 export const register = async (req: Request, res: Response) => {
-  const schema = Joi.object({
-    email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
-    name: Joi.string().min(3).required(),
-    tasks: Joi.array().items(
-      Joi.object({
-        title: Joi.string().required(),
-        priority: Joi.string().valid("HIGH", "MEDIUM", "LOW").required(),
-      })
-    ).optional(),
-  });
 
-  const { error } = schema.validate(req.body);
-  if (error) return res.status(400).json({ error: error.details[0].message });
 
   const { email, password, name, tasks = [] } = req.body;
 
@@ -42,6 +29,7 @@ export const register = async (req: Request, res: Response) => {
           data: tasks.map((task : object) => ({
             ...task,
             userId: newUser.id,
+            id: undefined, 
           })),
         });
       }
@@ -49,9 +37,13 @@ export const register = async (req: Request, res: Response) => {
       return newUser;
     });
 
-    // Exclude the password from the response
+    const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET as string, {
+      expiresIn: "12h",
+    });
+
+
     const { password: _, ...userWithoutPassword } = user;
-    res.status(201).json(userWithoutPassword);
+    res.status(201).json({ token, user: userWithoutPassword });
   } catch (error) {
     console.error("Error during registration:", error);
 
@@ -65,7 +57,9 @@ export const register = async (req: Request, res: Response) => {
 
 // * Login function to generate token for the user.
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, tasks =[] } = req.body;
+
+  if (!email || !password) return res.status(400).json({ message: "Email and password are required" });
 
   try {
     const user = await prisma.user.findUnique({
@@ -76,6 +70,16 @@ export const login = async (req: Request, res: Response) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) return res.status(401).json({ message: "Invalid email or password" });
+
+    if (tasks.length) {
+      await prisma.task.createMany({
+        data: tasks.map((task: { title: string; priority: string; text?: string }) => ({
+          ...task,
+          userId: user.id,
+          id: undefined, 
+        })),
+      });
+    }
 
     const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET as string, {
       expiresIn: "12h",

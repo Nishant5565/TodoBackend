@@ -27,23 +27,9 @@ exports.authUser = exports.login = exports.register = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const client_1 = require("@prisma/client");
-const joi_1 = __importDefault(require("joi"));
 const prisma = new client_1.PrismaClient();
 // * Register function to create a new user in the database.
 const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("Hello");
-    const schema = joi_1.default.object({
-        email: joi_1.default.string().email().required(),
-        password: joi_1.default.string().min(8).required(),
-        name: joi_1.default.string().min(3).required(),
-        tasks: joi_1.default.array().items(joi_1.default.object({
-            title: joi_1.default.string().required(),
-            priority: joi_1.default.string().valid("HIGH", "MEDIUM", "LOW").required(),
-        })).optional(),
-    });
-    const { error } = schema.validate(req.body);
-    if (error)
-        return res.status(400).json({ error: error.details[0].message });
     const { email, password, name, tasks = [] } = req.body;
     try {
         const hashedPassword = yield bcrypt_1.default.hash(password, 12);
@@ -53,14 +39,16 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             });
             if (tasks.length) {
                 yield prisma.task.createMany({
-                    data: tasks.map((task) => (Object.assign(Object.assign({}, task), { userId: newUser.id }))),
+                    data: tasks.map((task) => (Object.assign(Object.assign({}, task), { userId: newUser.id, id: undefined }))),
                 });
             }
             return newUser;
         }));
-        // Exclude the password from the response
+        const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+            expiresIn: "12h",
+        });
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
-        res.status(201).json(userWithoutPassword);
+        res.status(201).json({ token, user: userWithoutPassword });
     }
     catch (error) {
         console.error("Error during registration:", error);
@@ -73,7 +61,9 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.register = register;
 // * Login function to generate token for the user.
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, password } = req.body;
+    const { email, password, tasks = [] } = req.body;
+    if (!email || !password)
+        return res.status(400).json({ message: "Email and password are required" });
     try {
         const user = yield prisma.user.findUnique({
             where: { email },
@@ -83,6 +73,11 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const isPasswordValid = yield bcrypt_1.default.compare(password, user.password);
         if (!isPasswordValid)
             return res.status(401).json({ message: "Invalid email or password" });
+        if (tasks.length) {
+            yield prisma.task.createMany({
+                data: tasks.map((task) => (Object.assign(Object.assign({}, task), { userId: user.id, id: undefined }))),
+            });
+        }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
             expiresIn: "12h",
         });

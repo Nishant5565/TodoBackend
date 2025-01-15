@@ -27,7 +27,10 @@ model Task {
   dueDate     DateTime?                     // Optional due date for the task
   user        User     @relation(fields: [userId], references: [id]) // User association
   userId      String                        // Foreign key to User
+  favorite    Boolean  @default(false)      // Task favorite status
+  reminder    String  @default("No reminder")      // Task reminder status
   createdAt   DateTime @default(now())      // Timestamp when the task is created
   updatedAt   DateTime @updatedAt           // Timestamp for when the task is updated
+  repeat      Boolean  @default(false)      // Task repeat status
 }
 

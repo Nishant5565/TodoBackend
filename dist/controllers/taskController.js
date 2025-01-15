@@ -8,15 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getTaskById = exports.deleteTask = exports.updateTask = exports.getTasks = exports.createTask = void 0;
 const client_1 = require("@prisma/client");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const prisma = new client_1.PrismaClient();
 /**
  * Create a new task
  */
 const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { title, priority, userId } = req.body;
+    var _a;
+    const { title, priority, dueDate, repeat, reminder, favorite, text } = req.body;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    if (!token)
+        return res.status(401).json({ error: "Unauthorized" });
+    const key = process.env.JWT_SECRET;
+    const decoded = jsonwebtoken_1.default.verify(token, key);
+    const userId = decoded.id;
     if (!userId)
         return res.status(401).json({ error: "Unauthorized" });
     try {
@@ -24,7 +35,12 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             data: {
                 title,
                 priority,
+                dueDate,
                 userId,
+                repeat,
+                reminder,
+                favorite,
+                description: text,
             },
         });
         res.status(201).json(task);
@@ -39,7 +55,13 @@ exports.createTask = createTask;
  * Get all tasks for the authenticated user
  */
 const getTasks = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { userId } = req.body;
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    if (!token)
+        return res.status(401).json({ error: "Unauthorized" });
+    const key = process.env.JWT_SECRET;
+    const decoded = jsonwebtoken_1.default.verify(token, key);
+    const userId = decoded.id;
     if (!userId)
         return res.status(401).json({ error: "Unauthorized" });
     try {
@@ -59,17 +81,26 @@ exports.getTasks = getTasks;
  * Update a task by its ID
  */
 const updateTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const { title, priority, userId } = req.body;
+    var _a;
+    const { taskId } = req.params;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    if (!token)
+        return res.status(401).json({ error: "Unauthorized" });
+    const key = process.env.JWT_SECRET;
+    const decoded = jsonwebtoken_1.default.verify(token, key);
+    const userId = decoded.id;
     if (!userId)
         return res.status(401).json({ error: "Unauthorized" });
     try {
         const task = yield prisma.task.updateMany({
-            where: { id, userId },
-            data: { title, priority },
+            where: { id: taskId, userId },
+            data: { repeat: req.body.repeat, reminder: req.body.reminder, favorite: req.body.favorite, completed: req.body.completed, description: req.body.text
+            },
         });
         if (task.count === 0)
-            return res.status(404).json({ error: "Task not found or not authorized" });
+            return res
+                .status(404)
+                .json({ error: "Task not found or not authorized" });
         res.status(200).json({ message: "Task updated successfully" });
     }
     catch (error) {
@@ -82,15 +113,24 @@ exports.updateTask = updateTask;
  * Delete a task by its ID
  */
 const deleteTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, userId } = req.params;
+    var _a;
+    const { taskId } = req.params;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    if (!token)
+        return res.status(401).json({ error: "Unauthorized" });
+    const key = process.env.JWT_SECRET;
+    const decoded = jsonwebtoken_1.default.verify(token, key);
+    const userId = decoded.id;
     if (!userId)
         return res.status(401).json({ error: "Unauthorized" });
     try {
         const task = yield prisma.task.deleteMany({
-            where: { id, userId },
+            where: { id: taskId, userId },
         });
         if (task.count === 0)
-            return res.status(404).json({ error: "Task not found or not authorized" });
+            return res
+                .status(404)
+                .json({ error: "Task not found or not authorized" });
         res.status(200).json({ message: "Task deleted successfully" });
     }
     catch (error) {
@@ -103,12 +143,12 @@ exports.deleteTask = deleteTask;
  * Get a specific task by ID
  */
 const getTaskById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id, userId } = req.params;
+    const { taskId, userId } = req.params;
     if (!userId)
         return res.status(401).json({ error: "Unauthorized" });
     try {
         const task = yield prisma.task.findFirst({
-            where: { id, userId },
+            where: { id: taskId, userId },
         });
         if (!task)
             return res.status(404).json({ error: "Task not found" });

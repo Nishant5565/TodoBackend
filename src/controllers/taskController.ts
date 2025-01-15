@@ -1,14 +1,20 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
-
+import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 
 /**
  * Create a new task
  */
 export const createTask = async (req: Request, res: Response) => {
-  const { title, priority, userId , dueDate} = req.body;
- 
+  const { title, priority, dueDate ,repeat,reminder,favorite , text} = req.body;
+
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  const key = process.env.JWT_SECRET;
+  const decoded = jwt.verify(token, key as string);
+  const userId = (decoded as jwt.JwtPayload).id;
+
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
@@ -19,6 +25,10 @@ export const createTask = async (req: Request, res: Response) => {
         priority,
         dueDate,
         userId,
+        repeat,
+        reminder,
+        favorite, 
+        description: text,
       },
     });
 
@@ -33,8 +43,13 @@ export const createTask = async (req: Request, res: Response) => {
  * Get all tasks for the authenticated user
  */
 export const getTasks = async (req: Request, res: Response) => {
-  const { userId } = req.body;
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  const key = process.env.JWT_SECRET;
+  const decoded = jwt.verify(token, key as string);
+  const userId = (decoded as jwt.JwtPayload).id;
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
 
   try {
     const tasks = await prisma.task.findMany({
@@ -53,19 +68,27 @@ export const getTasks = async (req: Request, res: Response) => {
  * Update a task by its ID
  */
 export const updateTask = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { title, priority , userId , dueDate} = req.body;
+  const { taskId } = req.params;
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  const key = process.env.JWT_SECRET;
+  const decoded = jwt.verify(token, key as string);
+  const userId = (decoded as jwt.JwtPayload).id;
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const task = await prisma.task.updateMany({
-      where: { id, userId },
-      data: { title, priority , dueDate},
+      where: { id:taskId, userId },
+      data: { repeat: req.body.repeat, reminder: req.body.reminder, favorite: req.body.favorite, completed: req.body.completed , description: req.body.text
+
+      },
     });
 
     if (task.count === 0)
-      return res.status(404).json({ error: "Task not found or not authorized" });
+      return res
+        .status(404)
+        .json({ error: "Task not found or not authorized" });
 
     res.status(200).json({ message: "Task updated successfully" });
   } catch (error) {
@@ -78,17 +101,25 @@ export const updateTask = async (req: Request, res: Response) => {
  * Delete a task by its ID
  */
 export const deleteTask = async (req: Request, res: Response) => {
-  const { id, userId } = req.params;
+  const { taskId } = req.params;
+
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ error: "Unauthorized" });
+  const key = process.env.JWT_SECRET;
+  const decoded = jwt.verify(token, key as string);
+  const userId = (decoded as jwt.JwtPayload).id;
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const task = await prisma.task.deleteMany({
-      where: { id, userId },
+      where: { id:taskId, userId },
     });
 
     if (task.count === 0)
-      return res.status(404).json({ error: "Task not found or not authorized" });
+      return res
+        .status(404)
+        .json({ error: "Task not found or not authorized" });
 
     res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
@@ -101,13 +132,13 @@ export const deleteTask = async (req: Request, res: Response) => {
  * Get a specific task by ID
  */
 export const getTaskById = async (req: Request, res: Response) => {
-  const { id, userId } = req.params;
+  const { taskId, userId } = req.params;
 
   if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
   try {
     const task = await prisma.task.findFirst({
-      where: { id, userId },
+      where: { id:taskId, userId },
     });
 
     if (!task) return res.status(404).json({ error: "Task not found" });
@@ -118,5 +149,3 @@ export const getTaskById = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-

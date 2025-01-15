@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "http://localhost:3000",
+      "http://localhost:4000",
     ],
     credentials: true,
   })
@@ -68,7 +68,7 @@ app.get("/", (req: Request, res: Response) => {
 app.use("/auth", authRoutes);
 
 //* Middleware to authenticate JWT token
-app.use(authenticateToken);
+// app.use(authenticateToken);
 
 //* Routes
 
