@@ -15,8 +15,11 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
+      "https://do-it-tasks.vercel.app",
       "http://localhost:4000",
+      "https://do-it-tasks.vercel.app/"
     ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
 );

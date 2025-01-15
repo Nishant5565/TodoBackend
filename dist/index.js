@@ -15,8 +15,11 @@ const prisma = new client_1.PrismaClient();
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({
     origin: [
+        "https://do-it-tasks.vercel.app",
         "http://localhost:4000",
+        "https://do-it-tasks.vercel.app/"
     ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
 }));
 app.get("/", (req, res) => {

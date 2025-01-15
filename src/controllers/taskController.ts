@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
  * Create a new task
  */
 export const createTask = async (req: Request, res: Response) => {
-  const { title, priority, dueDate ,repeat,reminder,favorite , text} = req.body;
+  const { title, priority, dueDate ,repeat,reminder,favorite , description} = req.body;
 
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ error: "Unauthorized" });
@@ -28,7 +28,7 @@ export const createTask = async (req: Request, res: Response) => {
         repeat,
         reminder,
         favorite, 
-        description: text,
+        description,
       },
     });
 

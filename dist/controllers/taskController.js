@@ -21,7 +21,7 @@ const prisma = new client_1.PrismaClient();
  */
 const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
-    const { title, priority, dueDate, repeat, reminder, favorite, text } = req.body;
+    const { title, priority, dueDate, repeat, reminder, favorite, description } = req.body;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
     if (!token)
         return res.status(401).json({ error: "Unauthorized" });
@@ -40,7 +40,7 @@ const createTask = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 repeat,
                 reminder,
                 favorite,
-                description: text,
+                description,
             },
         });
         res.status(201).json(task);
